@@ -1,0 +1,20 @@
+{
+  "name": "tls-cert-update",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Christian Tellnes <christian@tellnes.no> (http://christian.tellnes.com/)",
+  "license": "MIT",
+  "dependencies": {
+    "track": "0.0.4",
+    "file-expires": "0.0.1"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tellnes/tls-cert-update.git"
+  },
+  "description": "Reads files used by tls from disk or http and updates them when they expires."
+}
