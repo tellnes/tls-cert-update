@@ -11,18 +11,8 @@ module.exports = function(options, cb) {
     , t = track()
     , self = new EventEmitter
 
-  if (cb) {
-    function onready() {
-      self.removeListener('error', onerror)
-      cb(null, self.options)
-    }
-    function onerror(err) {
-      self.removeListener('ready', onready)
-      cb(err)
-      self.destroy()
-    }
-    self.once('ready', onready)
-    self.once('error', onerror)
+  if (!cb) cb = function(err) {
+    if (err) self.emit('error', err)
   }
 
   self.options = extend({}, options)
@@ -60,24 +50,29 @@ module.exports = function(options, cb) {
 
 
     value.forEach(function(file, index) {
-      file = createFileExpirer(file)
-      function update(cb) {
-        if (!cb) cb = updateContext
+      function onfile(buffer) {
+        if (isArray) {
+          self.options[type][index] = buffer
+        } else {
+          self.options[type] = buffer
+        }
+      }
 
+      file = createFileExpirer(file, t(function(err, buffer, cb) {
+        if (err) return cb(err)
+        onfile(buffer)
+        cb()
+      }))
+
+      file.on('expires', function() {
         file.readFile(function(err, buffer) {
           if (err) return self.emit('error', err)
 
-          if (isArray) {
-            self.options[type][index] = buffer
-          } else {
-            self.options[type] = buffer
-          }
-
-          cb()
+          onfile(buffer)
+          updateContext()
         })
-      }
-      file.on('expires', update)
-      update(t())
+      })
+
       files.push(file)
     })
   }
@@ -91,10 +86,10 @@ module.exports = function(options, cb) {
 
   t.end(function(err) {
     t = null
-    if (err) return self.emit('error', err)
+    if (err) return cb(err)
 
     updateContext()
-    self.emit('ready')
+    cb(null, self.options)
   })
 
   return self
