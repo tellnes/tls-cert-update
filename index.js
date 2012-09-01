@@ -58,7 +58,7 @@ module.exports = function(options, cb) {
         }
       }
 
-      file = createFileExpirer(file, t(function(err, buffer, cb) {
+      file = createFileExpirer(file, { cwd: options.cwd }, t(function(err, buffer, cb) {
         if (err) return cb(err)
         onfile(buffer)
         cb()

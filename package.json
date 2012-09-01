@@ -9,7 +9,7 @@
   "license": "MIT",
   "dependencies": {
     "track": "0.0.4",
-    "file-expires": "0.0.1"
+    "file-expires": "0.0.2"
   },
   "devDependencies": {},
   "repository": {
