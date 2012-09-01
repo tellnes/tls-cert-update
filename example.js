@@ -9,6 +9,7 @@ tcu ( { ca: [ 'http://s3-eu-west-1.amazonaws.com/files.infogym.no/ca/root.crt'
       }
     , function(err, options) {
         if (err) throw err
+        console.log(options)
       }
     )
 
