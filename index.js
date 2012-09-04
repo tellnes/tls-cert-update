@@ -90,6 +90,7 @@ module.exports = function(options, cb) {
 
     updateContext()
     cb(null, self.options)
+    self.emit('ready')
   })
 
   return self
