@@ -8,8 +8,8 @@
   "author": "Christian Tellnes <christian@tellnes.no> (http://christian.tellnes.com/)",
   "license": "MIT",
   "dependencies": {
-    "track": "0.0.4",
-    "file-expires": "0.0.2"
+    "track": "~0.1.1",
+    "file-expires": "~0.1.0"
   },
   "devDependencies": {},
   "repository": {
