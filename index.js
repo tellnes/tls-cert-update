@@ -1,13 +1,14 @@
 var track = require('track')
   , crypto = require('crypto')
-  , createFileExpirer = require('file-expires')
+  , fileExpires = require('file-expires')
   , EventEmitter = require('events').EventEmitter
   , extend = require('util')._extend
 
 
+var cache = {}
 
 module.exports = function(options, cb) {
-  var files = []
+  var fes = []
     , t = track()
     , self = new EventEmitter
 
@@ -27,9 +28,21 @@ module.exports = function(options, cb) {
     self.emit('update')
   }
 
+  function onerror(err) {
+    self.emit('error', err)
+  }
+
   self.destroy = function() {
-    files.forEach(function(file) {
-      file.destroy()
+    fes.forEach(function(item) {
+      var fe = item.fe
+      fe.ref--
+      fe.removeListener('error', onerror)
+      fe.removeListener('expires', item.onexpires)
+
+      if (!fe.ref) {
+        delete cache[fe.uri]
+        fe.destroy()
+      }
     })
   }
 
@@ -49,7 +62,9 @@ module.exports = function(options, cb) {
     }
 
 
-    value.forEach(function(file, index) {
+    value.forEach(function(uri, index) {
+      var fe
+
       function onfile(buffer) {
         if (isArray) {
           self.options[type][index] = buffer
@@ -58,22 +73,35 @@ module.exports = function(options, cb) {
         }
       }
 
-      file = createFileExpirer(file, { cwd: options.cwd }, t(function(err, buffer, cb) {
+      function onexpires() {
+        fe.readFile(function(err, buffer) {
+          if (err) return self.emit('error', err)
+          onfile(buffer)
+          updateContext()
+        })
+      }
+
+      if (!fileExpires.isURL(uri) && options.cwd) uri = path.resolve(options.cwd, uri)
+
+      fe = cache[uri]
+      if (!fe) {
+        fe = fileExpires(uri)
+        cache[uri] = fe
+        fe.ref = 0
+      }
+
+      fe.ref++
+
+      fe.readFile(t(function(err, buffer, cb) {
         if (err) return cb(err)
         onfile(buffer)
         cb()
       }))
 
-      file.on('expires', function() {
-        file.readFile(function(err, buffer) {
-          if (err) return self.emit('error', err)
+      fe.on('expires', onexpires)
+      fe.on('error', onerror)
 
-          onfile(buffer)
-          updateContext()
-        })
-      })
-
-      files.push(file)
+      fes.push({ fe: fe, onexpires: onexpires })
     })
   }
 
