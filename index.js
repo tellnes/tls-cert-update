@@ -3,6 +3,7 @@ var track = require('track')
   , fileExpires = require('file-expires')
   , EventEmitter = require('events').EventEmitter
   , extend = require('util')._extend
+  , path = require('path')
 
 
 var cache = {}
